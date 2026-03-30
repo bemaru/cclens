@@ -26,8 +26,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .card{background:var(--card);border-radius:12px;padding:20px;border:1px solid var(--border)}
 .card h3{font-size:.82rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:14px}
 .full{grid-column:1/-1}
-.chart-wrap{position:relative;min-height:280px}
+.chart-wrap{position:relative;min-height:300px}
 .chart-wrap canvas{width:100%!important}
+.donut-wrap{max-width:360px;margin:0 auto}
+.donut-wrap canvas{width:100%!important;height:auto!important}
 table{width:100%;border-collapse:collapse;font-size:.85rem}
 th{text-align:left;padding:8px 12px;border-bottom:2px solid var(--border);color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}
 td{padding:8px 12px;border-bottom:1px solid var(--border)}
@@ -81,7 +83,7 @@ tr:hover td{background:rgba(129,140,248,.04)}
 
 <div id="p-skills" class="panel">
   <div class="grid">
-    <div class="card"><h3>Category Distribution</h3><div class="chart-wrap"><canvas id="cCatDonut"></canvas></div></div>
+    <div class="card"><h3>Category Distribution</h3><div class="donut-wrap"><canvas id="cCatDonut"></canvas></div></div>
     <div class="card"><h3>Skill Usage</h3><div class="chart-wrap"><canvas id="cSkillBar"></canvas></div></div>
   </div>
   <div class="grid">
@@ -94,7 +96,7 @@ tr:hover td{background:rgba(129,140,248,.04)}
 <div id="p-tokens" class="panel">
   <div class="grid">
     <div class="card"><h3>Daily Cost</h3><div class="chart-wrap"><canvas id="cDailyCost"></canvas></div></div>
-    <div class="card"><h3>Token Distribution</h3><div class="chart-wrap"><canvas id="cTokenDist"></canvas></div></div>
+    <div class="card"><h3>Token Distribution</h3><div class="donut-wrap"><canvas id="cTokenDist"></canvas></div></div>
   </div>
   <div class="grid">
     <div class="card"><h3>Model Breakdown</h3><div class="scroll-table" id="modelTableWrap"></div></div>
@@ -183,7 +185,7 @@ document.getElementById('tabBar').addEventListener('click',function(e){
   new Chart(document.getElementById('cCatDonut'),{
     type:'doughnut',
     data:{labels:catKeys.map(function(k){var c=cats[k];return c.label+' ('+c.used+'/'+c.total+')'}),datasets:[{data:catKeys.map(function(k){return cats[k].count||1}),backgroundColor:catKeys.map(function(k){return cats[k].color})}]},
-    options:{plugins:{legend:{position:'bottom',labels:{padding:12,usePointStyle:true}}}}
+    options:{maintainAspectRatio:true,aspectRatio:1,plugins:{legend:{position:'bottom',labels:{padding:12,usePointStyle:true}}}}
   });
 
   // Skill usage bar
@@ -236,7 +238,7 @@ document.getElementById('tabBar').addEventListener('click',function(e){
   new Chart(document.getElementById('cTokenDist'),{
     type:'doughnut',
     data:{labels:['Input','Output','Cache Write','Cache Read'],datasets:[{data:[dist.input||0,dist.output||0,dist.cache_creation||0,dist.cache_read||0],backgroundColor:['#818cf8','#f59e0b','#ec4899','#10b981']}]},
-    options:{plugins:{legend:{position:'bottom',labels:{usePointStyle:true}}}}
+    options:{maintainAspectRatio:true,aspectRatio:1,plugins:{legend:{position:'bottom',labels:{usePointStyle:true}}}}
   });
 
   // Model table
