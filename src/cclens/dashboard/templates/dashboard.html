@@ -5,338 +5,662 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>cclens Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--border:#334155;--accent:#818cf8}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px;min-height:100vh}
-.container{max-width:1400px;margin:0 auto}
-.header{display:flex;align-items:center;justify-content:space-between;padding-bottom:20px;border-bottom:1px solid var(--border);margin-bottom:24px}
-.header h1{font-size:1.4rem;font-weight:700}.header h1 span{color:var(--accent)}
-.header-meta{color:var(--muted);font-size:.82rem}
-.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px;overflow-x:auto}
-.tab{background:none;border:none;color:var(--muted);font-size:.92rem;padding:10px 22px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s}
-.tab:hover{color:var(--text)}.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
-.panel{display:none}.panel.active{display:block}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:24px}
-.stat{background:var(--card);border-radius:12px;padding:20px;text-align:center;border:1px solid var(--border)}
-.stat .v{font-size:1.8rem;font-weight:700;font-family:'SF Mono',Monaco,monospace;line-height:1.2}
-.stat .l{font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-top:6px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
-@media(max-width:900px){.grid{grid-template-columns:1fr}}
-.card{background:var(--card);border-radius:12px;padding:20px;border:1px solid var(--border)}
-.card h3{font-size:.82rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:14px}
-.full{grid-column:1/-1}
-.chart-wrap{position:relative;min-height:300px}
-.chart-wrap canvas{width:100%!important}
-.donut-wrap{max-width:360px;margin:0 auto}
-.donut-wrap canvas{width:100%!important;height:auto!important}
-table{width:100%;border-collapse:collapse;font-size:.85rem}
-th{text-align:left;padding:8px 12px;border-bottom:2px solid var(--border);color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}
-td{padding:8px 12px;border-bottom:1px solid var(--border)}
-tr:hover td{background:rgba(129,140,248,.04)}
-.mono{font-family:'SF Mono',Monaco,monospace;font-size:.8rem}
-.scroll-table{max-height:420px;overflow-y:auto}
-.heatmap-grid{display:grid;grid-template-columns:60px repeat(24,1fr);gap:2px;font-size:.7rem}
-.hm-label{display:flex;align-items:center;color:var(--muted);font-size:.75rem}
-.hm-header{text-align:center;color:var(--muted);font-size:.65rem;font-family:monospace}
-.hm-cell{aspect-ratio:1;border-radius:3px;min-width:14px;min-height:14px;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--muted);cursor:default}
-.hm-cell:hover{outline:2px solid var(--accent)}
-.rel-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:.82rem}
-.rel-node{background:var(--border);padding:4px 10px;border-radius:6px;color:var(--text);font-family:monospace;font-size:.78rem}
-.rel-node.active{background:#4f46e5}
-.rel-arrow{color:var(--muted)}
-.rel-label{font-size:.72rem;color:var(--muted)}
-.unused-wrap{display:flex;flex-wrap:wrap;gap:8px}
-.unused-tag{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:6px;padding:4px 12px;font-size:.78rem;font-family:monospace}
-.skill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
-.skill-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;font-size:.82rem}
-.skill-item.used{background:#1a2332}.skill-item.unused{background:#1a1a2e;opacity:.5}
-.skill-name{font-family:monospace;font-size:.78rem}
-.skill-count{font-weight:700;min-width:28px;text-align:right;font-family:monospace}
-.cat-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
-.metric{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 20px;margin:6px 6px 6px 0}
-.metric .mv{font-size:1.5rem;font-weight:700;font-family:monospace}.metric .ml{color:var(--muted);font-size:.82rem}
+:root {
+  --bg: #0a0e1a;
+  --bg2: #0f1629;
+  --card: #141b2d;
+  --card-hover: #1a2340;
+  --text: #e4e8f1;
+  --text2: #c8cdd8;
+  --muted: #6b7394;
+  --border: #1e2744;
+  --glow: #636ee6;
+  --glow2: #818cf8;
+  --emerald: #34d399;
+  --amber: #fbbf24;
+  --rose: #fb7185;
+  --cyan: #22d3ee;
+  --violet: #a78bfa;
+  --orange: #fb923c;
+  --surface: rgba(99,110,230,.06);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,110,230,.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(52,211,153,.06) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.shell { position: relative; z-index: 1; max-width: 1440px; margin: 0 auto; padding: 28px 32px; }
+
+/* ── Header ── */
+.hdr {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding-bottom: 24px; margin-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+.hdr-brand {
+  display: flex; align-items: center; gap: 14px;
+}
+.hdr-logo {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--glow), var(--emerald));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 15px; color: #fff;
+  box-shadow: 0 0 20px rgba(99,110,230,.3);
+}
+.hdr h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -.02em; }
+.hdr h1 b { color: var(--glow2); font-weight: 700; }
+.hdr-meta {
+  font-family: 'JetBrains Mono', monospace; font-size: .72rem;
+  color: var(--muted); letter-spacing: .02em;
+}
+
+/* ── Tabs ── */
+.nav { display: flex; gap: 2px; margin-bottom: 28px; background: var(--card); border-radius: 12px; padding: 4px; border: 1px solid var(--border); }
+.nav-btn {
+  background: none; border: none; color: var(--muted); font-family: 'DM Sans', sans-serif;
+  font-size: .85rem; font-weight: 500; padding: 10px 22px; cursor: pointer;
+  border-radius: 9px; transition: all .25s; position: relative;
+}
+.nav-btn:hover { color: var(--text2); background: var(--surface); }
+.nav-btn.on {
+  color: #fff; background: var(--glow);
+  box-shadow: 0 2px 12px rgba(99,110,230,.35);
+}
+
+.panel { display: none; animation: fadeUp .35s ease; }
+.panel.on { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Stat Cards ── */
+.kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 28px; }
+@media (max-width: 1100px) { .kpis { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+.kpi {
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 22px 18px; position: relative; overflow: hidden;
+  transition: border-color .3s, box-shadow .3s;
+}
+.kpi:hover { border-color: rgba(99,110,230,.3); box-shadow: 0 0 24px rgba(99,110,230,.08); }
+.kpi::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--accent-c, var(--glow)); opacity: .6;
+}
+.kpi-val {
+  font-family: 'JetBrains Mono', monospace; font-size: 1.65rem; font-weight: 700;
+  line-height: 1.15; color: var(--accent-c, var(--text));
+}
+.kpi-lbl {
+  font-size: .7rem; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--muted); margin-top: 8px; font-weight: 500;
+}
+
+/* ── Layout ── */
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+@media (max-width: 900px) { .row, .row-3 { grid-template-columns: 1fr; } }
+.span-full { grid-column: 1 / -1; }
+
+/* ── Cards ── */
+.c {
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 22px; position: relative;
+  transition: border-color .3s;
+}
+.c:hover { border-color: rgba(99,110,230,.2); }
+.c-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.c-title {
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--muted); font-weight: 500;
+}
+.c-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: .65rem;
+  background: var(--surface); color: var(--glow2); padding: 3px 10px;
+  border-radius: 6px;
+}
+
+/* ── Charts ── */
+.ch { position: relative; min-height: 280px; }
+.donut-box { max-width: 320px; margin: 0 auto; }
+
+/* ── Tables ── */
+.tbl-wrap { max-height: 440px; overflow-y: auto; }
+.tbl-wrap::-webkit-scrollbar { width: 4px; }
+.tbl-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: .68rem; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--muted); font-weight: 500; position: sticky; top: 0;
+  background: var(--card);
+}
+td { padding: 10px 14px; border-bottom: 1px solid rgba(30,39,68,.6); font-size: .82rem; }
+tr:hover td { background: var(--surface); }
+.mono { font-family: 'JetBrains Mono', monospace; font-size: .78rem; }
+
+/* ── Heatmap ── */
+.hm-grid { display: grid; grid-template-columns: 52px repeat(24, 1fr); gap: 3px; }
+.hm-lbl { display: flex; align-items: center; font-size: .72rem; color: var(--muted); font-weight: 500; }
+.hm-hdr { text-align: center; color: var(--muted); font-size: .6rem; font-family: 'JetBrains Mono', monospace; }
+.hm-cell {
+  aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+  font-size: .58rem; font-family: 'JetBrains Mono', monospace; color: rgba(255,255,255,.5);
+  cursor: default; transition: outline .15s;
+}
+.hm-cell:hover { outline: 1.5px solid var(--glow2); outline-offset: 1px; }
+
+/* ── Skills ── */
+.rel-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.rel-node {
+  background: var(--bg2); border: 1px solid var(--border); padding: 5px 12px;
+  border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: .73rem; color: var(--text2);
+  transition: all .2s;
+}
+.rel-node.active { background: rgba(99,110,230,.15); border-color: var(--glow); color: var(--glow2); }
+.rel-arrow { color: var(--muted); font-size: .9rem; }
+.rel-lbl { font-size: .68rem; color: var(--muted); margin-left: 4px; }
+
+.unused-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+.unused-tag {
+  background: rgba(251,113,133,.08); border: 1px solid rgba(251,113,133,.2);
+  color: var(--rose); border-radius: 8px; padding: 5px 14px;
+  font-size: .75rem; font-family: 'JetBrains Mono', monospace;
+}
+
+.sk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 6px; }
+.sk-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px; border-radius: 10px; font-size: .82rem;
+  transition: background .2s;
+}
+.sk-item.used { background: rgba(99,110,230,.05); }
+.sk-item.used:hover { background: rgba(99,110,230,.1); }
+.sk-item.unused { background: rgba(255,255,255,.02); opacity: .45; }
+.sk-name { font-family: 'JetBrains Mono', monospace; font-size: .75rem; }
+.sk-cnt { font-family: 'JetBrains Mono', monospace; font-weight: 700; min-width: 30px; text-align: right; }
+.cat-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+
+/* ── Metrics ── */
+.met-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.met {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 22px; display: flex; flex-direction: column; gap: 4px;
+}
+.met-v { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 700; }
+.met-l { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
 </style>
 </head>
 <body>
-<div class="container">
-<div class="header">
-  <h1><span>cclens</span> Dashboard</h1>
-  <div class="header-meta">{{ data.meta.generated }} | {{ data.meta.days }} days{% if data.meta.project_filter %} | {{ data.meta.project_filter }}{% endif %}</div>
-</div>
 
-<div class="tabs" id="tabBar">
-  <button class="tab active" data-tab="overview">Overview</button>
-  <button class="tab" data-tab="skills">Skills</button>
-  <button class="tab" data-tab="tokens">Tokens</button>
-  <button class="tab" data-tab="productivity">Productivity</button>
-  <button class="tab" data-tab="trends">Trends</button>
-</div>
+<div class="shell">
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-brand">
+      <div class="hdr-logo">CL</div>
+      <h1><b>cclens</b> Dashboard</h1>
+    </div>
+    <div class="hdr-meta">{{ data.meta.generated }} &middot; {{ data.meta.days }}d{% if data.meta.project_filter %} &middot; {{ data.meta.project_filter }}{% endif %}</div>
+  </div>
 
-<div id="p-overview" class="panel active">
-  <div class="stats" id="overviewStats"></div>
-  <div class="grid">
-    <div class="card"><h3>Top Tools</h3><div class="chart-wrap"><canvas id="cOverviewTools"></canvas></div></div>
-    <div class="card"><h3>Daily Cost</h3><div class="chart-wrap"><canvas id="cOverviewCost"></canvas></div></div>
+  <!-- Nav -->
+  <div class="nav" id="tabBar">
+    <button class="nav-btn on" data-tab="overview">Overview</button>
+    <button class="nav-btn" data-tab="skills">Skills</button>
+    <button class="nav-btn" data-tab="tokens">Tokens</button>
+    <button class="nav-btn" data-tab="productivity">Productivity</button>
+    <button class="nav-btn" data-tab="trends">Trends</button>
   </div>
-</div>
 
-<div id="p-skills" class="panel">
-  <div class="grid">
-    <div class="card"><h3>Category Distribution</h3><div class="donut-wrap"><canvas id="cCatDonut"></canvas></div></div>
-    <div class="card"><h3>Skill Usage</h3><div class="chart-wrap"><canvas id="cSkillBar"></canvas></div></div>
+  <!-- ═══ OVERVIEW ═══ -->
+  <div id="p-overview" class="panel on">
+    <div class="kpis" id="kpiBox"></div>
+    <div class="row">
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Top Tools</span><span class="c-badge" id="toolTotal"></span></div>
+        <div class="ch"><canvas id="cTools"></canvas></div>
+      </div>
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Daily Cost</span></div>
+        <div class="ch"><canvas id="cCostLine"></canvas></div>
+      </div>
+    </div>
   </div>
-  <div class="grid">
-    <div class="card"><h3>Skill Relations</h3><div id="relDiv"></div></div>
-    <div class="card"><h3>Unused Skills</h3><div id="unusedDiv" class="unused-wrap"></div></div>
-  </div>
-  <div class="card" style="margin-bottom:20px"><h3>All Skills</h3><div class="skill-grid" id="allSkills"></div></div>
-</div>
 
-<div id="p-tokens" class="panel">
-  <div class="grid">
-    <div class="card"><h3>Daily Cost</h3><div class="chart-wrap"><canvas id="cDailyCost"></canvas></div></div>
-    <div class="card"><h3>Token Distribution</h3><div class="donut-wrap"><canvas id="cTokenDist"></canvas></div></div>
+  <!-- ═══ SKILLS ═══ -->
+  <div id="p-skills" class="panel">
+    <div class="row">
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Category Distribution</span></div>
+        <div class="donut-box"><canvas id="cCatDonut"></canvas></div>
+      </div>
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Skill Usage</span></div>
+        <div class="ch"><canvas id="cSkillBar"></canvas></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Skill Relations</span></div>
+        <div id="relDiv"></div>
+      </div>
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Unused Skills</span><span class="c-badge" id="unusedCount"></span></div>
+        <div id="unusedDiv" class="unused-wrap"></div>
+      </div>
+    </div>
+    <div class="c" style="margin-bottom:18px">
+      <div class="c-hdr"><span class="c-title">All Skills</span></div>
+      <div class="sk-grid" id="allSkills"></div>
+    </div>
   </div>
-  <div class="grid">
-    <div class="card"><h3>Model Breakdown</h3><div class="scroll-table" id="modelTableWrap"></div></div>
-    <div class="card"><h3>Cache Efficiency</h3><div id="cacheDiv"></div></div>
-  </div>
-</div>
 
-<div id="p-productivity" class="panel">
-  <div class="card full" style="margin-bottom:20px"><h3>Activity Heatmap (Weekday x Hour)</h3><div class="heatmap-grid" id="heatmapDiv"></div></div>
-  <div class="grid">
-    <div class="card"><h3>Session Scores (Top 20)</h3><div class="scroll-table" id="scoresWrap"></div></div>
-    <div class="card"><h3>Activity Summary</h3><div class="chart-wrap"><canvas id="cActiveDays"></canvas></div><div id="actSummary" style="margin-top:14px"></div></div>
+  <!-- ═══ TOKENS ═══ -->
+  <div id="p-tokens" class="panel">
+    <div class="row">
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Daily Cost</span></div>
+        <div class="ch"><canvas id="cDailyCost"></canvas></div>
+      </div>
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Token Distribution</span></div>
+        <div class="donut-box"><canvas id="cTokenDist"></canvas></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Model Breakdown</span></div>
+        <div class="tbl-wrap" id="modelTbl"></div>
+      </div>
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Cache Efficiency</span></div>
+        <div id="cacheBox"></div>
+      </div>
+    </div>
   </div>
-</div>
 
-<div id="p-trends" class="panel">
-  <div class="card full" style="margin-bottom:20px"><h3>Weekly Sessions &amp; Cost</h3><div class="chart-wrap"><canvas id="cWeekly"></canvas></div></div>
-  <div class="grid">
-    <div class="card"><h3>Weekly Skill Trends</h3><div class="chart-wrap"><canvas id="cSkillTrend"></canvas></div></div>
-    <div class="card"><h3>Monthly Summary</h3><div class="scroll-table" id="monthlyWrap"></div></div>
+  <!-- ═══ PRODUCTIVITY ═══ -->
+  <div id="p-productivity" class="panel">
+    <div class="c span-full" style="margin-bottom:18px">
+      <div class="c-hdr"><span class="c-title">Activity Heatmap</span><span class="c-badge">Weekday &times; Hour</span></div>
+      <div class="hm-grid" id="hmDiv"></div>
+    </div>
+    <div class="row">
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Session Scores</span><span class="c-badge">Top 20</span></div>
+        <div class="tbl-wrap" id="scoresTbl"></div>
+      </div>
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Activity Summary</span></div>
+        <div class="ch" style="min-height:200px"><canvas id="cDays"></canvas></div>
+        <div id="actMet" class="met-row" style="margin-top:16px"></div>
+      </div>
+    </div>
   </div>
-</div>
+
+  <!-- ═══ TRENDS ═══ -->
+  <div id="p-trends" class="panel">
+    <div class="c span-full" style="margin-bottom:18px">
+      <div class="c-hdr"><span class="c-title">Weekly Overview</span></div>
+      <div class="ch"><canvas id="cWeekly"></canvas></div>
+    </div>
+    <div class="row">
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Skill Trends</span><span class="c-badge">Weekly</span></div>
+        <div class="ch"><canvas id="cSkTrend"></canvas></div>
+      </div>
+      <div class="c">
+        <div class="c-hdr"><span class="c-title">Monthly Summary</span></div>
+        <div class="tbl-wrap" id="moTbl"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
 var D = {{ data | tojson }};
-var COLORS = ['#818cf8','#f59e0b','#10b981','#8b5cf6','#ec4899','#14b8a6','#f97316','#ef4444','#64748b','#06b6d4'];
-Chart.defaults.color = '#94a3b8';
-Chart.defaults.borderColor = '#334155';
+var PAL = ['#636ee6','#34d399','#fbbf24','#fb7185','#22d3ee','#a78bfa','#fb923c','#818cf8','#4ade80','#f472b6'];
+
+/* ── Chart.js globals ── */
+Chart.defaults.devicePixelRatio = 2;
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.color = '#6b7394';
+Chart.defaults.borderColor = 'rgba(30,39,68,.7)';
+Chart.defaults.elements.arc.borderWidth = 0;
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.pointStyleWidth = 8;
+Chart.defaults.plugins.legend.labels.padding = 14;
+Chart.defaults.plugins.tooltip.backgroundColor = '#1a2340';
+Chart.defaults.plugins.tooltip.borderColor = '#2a3558';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+Chart.defaults.plugins.tooltip.titleFont = { family: "'JetBrains Mono', monospace", size: 11 };
+Chart.defaults.plugins.tooltip.bodyFont = { family: "'JetBrains Mono', monospace", size: 11 };
 
 function fmt(n){if(n==null)return '0';if(n>=1e6)return (n/1e6).toFixed(1)+'M';if(n>=1e3)return (n/1e3).toFixed(1)+'K';return typeof n==='number'&&n%1!==0?n.toFixed(1):String(n)}
 function usd(n){return '$'+(typeof n==='number'?n.toFixed(2):'0')}
 
-// Tabs
-document.getElementById('tabBar').addEventListener('click',function(e){
-  var btn=e.target.closest('.tab');if(!btn)return;
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
-  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});
-  btn.classList.add('active');
-  document.getElementById('p-'+btn.dataset.tab).classList.add('active');
+/* ── Tabs ── */
+document.getElementById('tabBar').addEventListener('click', function(e){
+  var btn = e.target.closest('.nav-btn'); if(!btn) return;
+  document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('on'); });
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
+  btn.classList.add('on');
+  var panel = document.getElementById('p-' + btn.dataset.tab);
+  panel.classList.add('on');
+  /* Resize all charts in the newly visible panel so they render at correct size */
+  setTimeout(function(){
+    var canvases = panel.querySelectorAll('canvas');
+    canvases.forEach(function(c){
+      var inst = Chart.getChart(c);
+      if(inst) inst.resize();
+    });
+  }, 20);
 });
 
-// Overview stats
+/* ══════════ OVERVIEW ══════════ */
 (function(){
-  var o=D.overview||{};
-  var items=[
-    {v:o.sessions,l:'Sessions',c:'#818cf8'},
-    {v:usd(o.total_cost_usd),l:'Est. Cost',c:'#10b981'},
-    {v:fmt(o.total_tokens),l:'Total Tokens',c:'#8b5cf6'},
-    {v:fmt(o.total_lines_changed),l:'Lines Changed',c:'#f59e0b'},
-    {v:(o.cache_hit_rate||0)+'%',l:'Cache Hit Rate',c:'#ec4899'},
-    {v:o.active_hours_display||'-',l:'Active Hours',c:'#14b8a6'}
+  var o = D.overview || {};
+  var kpis = [
+    { v: o.sessions,                   l: 'Sessions',       c: '--glow2' },
+    { v: usd(o.total_cost_usd),        l: 'Est. Cost',      c: '--emerald' },
+    { v: fmt(o.total_tokens),           l: 'Total Tokens',   c: '--violet' },
+    { v: fmt(o.total_lines_changed),    l: 'Lines Changed',  c: '--amber' },
+    { v: (o.cache_hit_rate||0) + '%',   l: 'Cache Hit Rate', c: '--rose' },
+    { v: o.active_hours_display || '-', l: 'Active Hours',   c: '--cyan' }
   ];
-  var h='';items.forEach(function(i){h+='<div class="stat"><div class="v" style="color:'+i.c+'">'+i.v+'</div><div class="l">'+i.l+'</div></div>'});
-  document.getElementById('overviewStats').innerHTML=h;
-})();
+  var h = '';
+  kpis.forEach(function(k){
+    h += '<div class="kpi" style="--accent-c:var(' + k.c + ')">'
+       + '<div class="kpi-val">' + k.v + '</div>'
+       + '<div class="kpi-lbl">' + k.l + '</div></div>';
+  });
+  document.getElementById('kpiBox').innerHTML = h;
 
-// Overview tools chart
-(function(){
-  var tc=D.skills.tool_counts||{};
-  var sorted=Object.entries(tc).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
-  new Chart(document.getElementById('cOverviewTools'),{
-    type:'bar',
-    data:{labels:sorted.map(function(t){return t[0]}),datasets:[{data:sorted.map(function(t){return t[1]}),backgroundColor:'#818cf8',borderRadius:4}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{y:{ticks:{font:{family:'monospace',size:11}}}}}
+  /* Tool bar */
+  var tc = D.skills.tool_counts || {};
+  var sorted = Object.entries(tc).sort(function(a,b){return b[1]-a[1]}).slice(0,10);
+  var total = Object.values(tc).reduce(function(s,v){return s+v},0);
+  document.getElementById('toolTotal').textContent = fmt(total) + ' calls';
+  new Chart(document.getElementById('cTools'), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(function(t){return t[0]}),
+      datasets: [{
+        data: sorted.map(function(t){return t[1]}),
+        backgroundColor: sorted.map(function(_,i){ return PAL[i % PAL.length]; }),
+        borderRadius: 6, barThickness: 22
+      }]
+    },
+    options: {
+      indexAxis: 'y', plugins: { legend: { display: false } },
+      scales: { y: { ticks: { font: { family: "'JetBrains Mono', monospace", size: 11 } } }, x: { grid: { color: 'rgba(30,39,68,.5)' } } }
+    }
+  });
+
+  /* Cost line */
+  var dc = D.tokens.daily_costs || [];
+  new Chart(document.getElementById('cCostLine'), {
+    type: 'line',
+    data: {
+      labels: dc.map(function(d){return d.date.slice(5)}),
+      datasets: [{
+        data: dc.map(function(d){return d.cost}),
+        borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,.08)',
+        fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: '#34d399',
+        pointHoverRadius: 6, borderWidth: 2.5
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { x: { ticks: { maxTicksLimit: 10 } }, y: { ticks: { callback: function(v){return '$'+v.toFixed(0)} } } }
+    }
   });
 })();
 
-// Overview cost chart
+/* ══════════ SKILLS ══════════ */
 (function(){
-  var dc=D.tokens.daily_costs||[];
-  new Chart(document.getElementById('cOverviewCost'),{
-    type:'line',
-    data:{labels:dc.map(function(d){return d.date.slice(5)}),datasets:[{data:dc.map(function(d){return d.cost}),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',fill:true,tension:.3,pointRadius:2}]},
-    options:{plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:12}},y:{ticks:{callback:function(v){return '$'+v.toFixed(0)}}}}}
-  });
-})();
+  var sk = D.skills || {};
+  var cats = sk.categories || {};
+  var catKeys = Object.keys(cats);
 
-// Skills tab
-(function(){
-  var sk=D.skills||{};
-  var cats=sk.categories||{};
-  var catKeys=Object.keys(cats);
-
-  // Category donut
-  new Chart(document.getElementById('cCatDonut'),{
-    type:'doughnut',
-    data:{labels:catKeys.map(function(k){var c=cats[k];return c.label+' ('+c.used+'/'+c.total+')'}),datasets:[{data:catKeys.map(function(k){return cats[k].count||1}),backgroundColor:catKeys.map(function(k){return cats[k].color})}]},
-    options:{maintainAspectRatio:true,aspectRatio:1,plugins:{legend:{position:'bottom',labels:{padding:12,usePointStyle:true}}}}
+  new Chart(document.getElementById('cCatDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: catKeys.map(function(k){ var c=cats[k]; return c.label+' ('+c.used+'/'+c.total+')'; }),
+      datasets: [{ data: catKeys.map(function(k){return cats[k].count||1}), backgroundColor: catKeys.map(function(k){return cats[k].color}), borderWidth: 0 }]
+    },
+    options: { maintainAspectRatio: true, aspectRatio: 1, cutout: '62%', plugins: { legend: { position: 'bottom' } } }
   });
 
-  // Skill usage bar
-  var used=sk.skill_list.filter(function(s){return s.count>0});
-  var catColors={};catKeys.forEach(function(k){catColors[k]=cats[k].color});
-  new Chart(document.getElementById('cSkillBar'),{
-    type:'bar',
-    data:{labels:used.map(function(s){return s.name}),datasets:[{data:used.map(function(s){return s.count}),backgroundColor:used.map(function(s){return catColors[s.category]||'#64748b'}),borderRadius:4}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{type:used.length>1&&used[0].count>10*used[used.length-1].count?'logarithmic':'linear'},y:{ticks:{font:{family:'monospace',size:11}}}}}
+  var used = sk.skill_list.filter(function(s){return s.count>0});
+  var catColors = {}; catKeys.forEach(function(k){ catColors[k] = cats[k].color; });
+  new Chart(document.getElementById('cSkillBar'), {
+    type: 'bar',
+    data: {
+      labels: used.map(function(s){return s.name}),
+      datasets: [{ data: used.map(function(s){return s.count}), backgroundColor: used.map(function(s){return catColors[s.category]||'#636ee6'}), borderRadius: 6, barThickness: 20 }]
+    },
+    options: {
+      indexAxis: 'y', plugins: { legend: { display: false } },
+      scales: { x: { type: used.length>1 && used[0].count > 10*used[used.length-1].count ? 'logarithmic' : 'linear' }, y: { ticks: { font: { family: "'JetBrains Mono', monospace", size: 11 } } } }
+    }
   });
 
-  // Relations
-  var rd=document.getElementById('relDiv');
-  (sk.relations||[]).forEach(function(r){
-    var el=document.createElement('div');el.className='rel-row';
-    el.innerHTML='<span class="rel-node'+(r.src_count>0?' active':'')+'">'+r.src+'</span><span class="rel-arrow">\u2192</span><span class="rel-node'+(r.dst_count>0?' active':'')+'">'+r.dst+'</span><span class="rel-label">'+r.label+'</span>';
+  /* Relations */
+  var rd = document.getElementById('relDiv');
+  (sk.relations || []).forEach(function(r){
+    var el = document.createElement('div'); el.className = 'rel-row';
+    el.innerHTML = '<span class="rel-node' + (r.src_count>0?' active':'') + '">' + r.src + '</span>'
+      + '<span class="rel-arrow">\u2192</span>'
+      + '<span class="rel-node' + (r.dst_count>0?' active':'') + '">' + r.dst + '</span>'
+      + '<span class="rel-lbl">' + r.label + '</span>';
     rd.appendChild(el);
   });
 
-  // Unused
-  var ud=document.getElementById('unusedDiv');
-  (sk.unused_skills||[]).forEach(function(s){
-    var el=document.createElement('span');el.className='unused-tag';el.textContent=s;ud.appendChild(el);
-  });
-  if(!sk.unused_skills||!sk.unused_skills.length)ud.innerHTML='<span style="color:var(--muted)">All skills in use!</span>';
+  /* Unused */
+  var unused = sk.unused_skills || [];
+  document.getElementById('unusedCount').textContent = unused.length + ' idle';
+  var ud = document.getElementById('unusedDiv');
+  unused.forEach(function(s){ var el = document.createElement('span'); el.className='unused-tag'; el.textContent=s; ud.appendChild(el); });
+  if(!unused.length) ud.innerHTML = '<span style="color:var(--emerald);font-size:.85rem">All skills active \u2714</span>';
 
-  // All skills grid
-  var g=document.getElementById('allSkills');
-  (sk.skill_list||[]).forEach(function(s){
-    var el=document.createElement('div');
-    el.className='skill-item '+(s.used?'used':'unused');
-    var color=catColors[s.category]||'#64748b';
-    el.innerHTML='<span><span class="cat-dot" style="background:'+color+'"></span><span class="skill-name">'+s.name+'</span></span><span class="skill-count">'+s.count+'</span>';
+  /* All skills */
+  var g = document.getElementById('allSkills');
+  (sk.skill_list || []).forEach(function(s){
+    var el = document.createElement('div');
+    el.className = 'sk-item ' + (s.used ? 'used' : 'unused');
+    var color = catColors[s.category] || '#636ee6';
+    el.innerHTML = '<span><span class="cat-dot" style="background:'+color+'"></span><span class="sk-name">'+s.name+'</span></span><span class="sk-cnt">'+s.count+'</span>';
     g.appendChild(el);
   });
 })();
 
-// Tokens tab
+/* ══════════ TOKENS ══════════ */
 (function(){
-  var tk=D.tokens||{};
-  var dc=tk.daily_costs||[];
+  var tk = D.tokens || {};
+  var dc = tk.daily_costs || [];
 
-  new Chart(document.getElementById('cDailyCost'),{
-    type:'line',
-    data:{labels:dc.map(function(d){return d.date}),datasets:[{label:'Cost',data:dc.map(function(d){return d.cost}),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',fill:true,tension:.3}]},
-    options:{plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:15}},y:{ticks:{callback:function(v){return '$'+v.toFixed(0)}}}}}
+  new Chart(document.getElementById('cDailyCost'), {
+    type: 'line',
+    data: {
+      labels: dc.map(function(d){return d.date}),
+      datasets: [{
+        label: 'Cost', data: dc.map(function(d){return d.cost}),
+        borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,.08)',
+        fill: true, tension: .4, pointRadius: 2, borderWidth: 2.5
+      }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 12 } }, y: { ticks: { callback: function(v){return '$'+v.toFixed(0)} } } } }
   });
 
-  var dist=tk.token_type_distribution||{};
-  new Chart(document.getElementById('cTokenDist'),{
-    type:'doughnut',
-    data:{labels:['Input','Output','Cache Write','Cache Read'],datasets:[{data:[dist.input||0,dist.output||0,dist.cache_creation||0,dist.cache_read||0],backgroundColor:['#818cf8','#f59e0b','#ec4899','#10b981']}]},
-    options:{maintainAspectRatio:true,aspectRatio:1,plugins:{legend:{position:'bottom',labels:{usePointStyle:true}}}}
+  var dist = tk.token_type_distribution || {};
+  new Chart(document.getElementById('cTokenDist'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Input', 'Output', 'Cache Write', 'Cache Read'],
+      datasets: [{ data: [dist.input||0, dist.output||0, dist.cache_creation||0, dist.cache_read||0], backgroundColor: ['#636ee6','#fbbf24','#fb7185','#34d399'], borderWidth: 0 }]
+    },
+    options: { maintainAspectRatio: true, aspectRatio: 1, cutout: '62%', plugins: { legend: { position: 'bottom' } } }
   });
 
-  // Model table
-  var mb=tk.model_breakdown||{};
-  var h='<table><thead><tr><th>Model</th><th>Calls</th><th>Cost</th><th>Input</th><th>Output</th><th>Cache Read</th></tr></thead><tbody>';
-  Object.keys(mb).sort(function(a,b){return mb[b].cost_usd-mb[a].cost_usd}).forEach(function(m){
-    var d=mb[m];
-    h+='<tr><td class="mono">'+m+'</td><td class="mono">'+d.count+'</td><td class="mono">'+usd(d.cost_usd)+'</td><td class="mono">'+fmt(d.input_tokens)+'</td><td class="mono">'+fmt(d.output_tokens)+'</td><td class="mono">'+fmt(d.cache_read)+'</td></tr>';
+  /* Model table */
+  var mb = tk.model_breakdown || {};
+  var h = '<table><thead><tr><th>Model</th><th>Calls</th><th>Cost</th><th>Input</th><th>Output</th><th>Cache Read</th></tr></thead><tbody>';
+  Object.keys(mb).sort(function(a,b){return mb[b].cost_usd - mb[a].cost_usd}).forEach(function(m){
+    var d = mb[m];
+    h += '<tr><td class="mono">' + m + '</td><td class="mono">' + d.count + '</td><td class="mono">' + usd(d.cost_usd) + '</td><td class="mono">' + fmt(d.input_tokens) + '</td><td class="mono">' + fmt(d.output_tokens) + '</td><td class="mono">' + fmt(d.cache_read) + '</td></tr>';
   });
-  h+='</tbody></table>';
-  document.getElementById('modelTableWrap').innerHTML=h;
+  h += '</tbody></table>';
+  document.getElementById('modelTbl').innerHTML = h;
 
-  // Cache metric
-  var rate=tk.cache_hit_rate||0;
-  document.getElementById('cacheDiv').innerHTML='<div class="metric"><div class="mv" style="color:#10b981">'+(rate*100).toFixed(1)+'%</div><div class="ml">Cache Hit Rate</div></div><div class="metric"><div class="mv" style="color:#818cf8;font-size:1.1rem">'+fmt(tk.total_cache_read_tokens)+'</div><div class="ml">Cache Read</div></div><div class="metric"><div class="mv" style="color:#8b5cf6;font-size:1.1rem">'+fmt(tk.total_cache_creation_tokens)+'</div><div class="ml">Cache Write</div></div>';
+  /* Cache */
+  var rate = tk.cache_hit_rate || 0;
+  document.getElementById('cacheBox').innerHTML =
+    '<div class="met-row">'
+    + '<div class="met"><div class="met-v" style="color:var(--emerald)">' + (rate*100).toFixed(1) + '%</div><div class="met-l">Hit Rate</div></div>'
+    + '<div class="met"><div class="met-v" style="color:var(--glow2)">' + fmt(tk.total_cache_read_tokens) + '</div><div class="met-l">Cache Read</div></div>'
+    + '<div class="met"><div class="met-v" style="color:var(--violet)">' + fmt(tk.total_cache_creation_tokens) + '</div><div class="met-l">Cache Write</div></div>'
+    + '</div>';
 })();
 
-// Productivity tab
+/* ══════════ PRODUCTIVITY ══════════ */
 (function(){
-  var pr=D.productivity||{};
-  var hm=pr.hourly_heatmap||[];
-  var days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  var maxV=0;
-  hm.forEach(function(row){row.forEach(function(v){if(v>maxV)maxV=v})});
+  var pr = D.productivity || {};
+  var hm = pr.hourly_heatmap || [];
+  var dayN = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var maxV = 0;
+  hm.forEach(function(row){ row.forEach(function(v){ if(v>maxV) maxV=v; }); });
 
-  var div=document.getElementById('heatmapDiv');
-  var h='<div></div>';
-  for(var hr=0;hr<24;hr++)h+='<div class="hm-header">'+(hr<10?'0':'')+hr+'</div>';
-  for(var d=0;d<7;d++){
-    h+='<div class="hm-label">'+days[d]+'</div>';
-    for(var hr2=0;hr2<24;hr2++){
-      var v=hm[d]?hm[d][hr2]||0:0;
-      var intensity=maxV>0?v/maxV:0;
-      var bg=intensity===0?'rgba(129,140,248,.03)':intensity<.25?'rgba(129,140,248,.15)':intensity<.5?'rgba(129,140,248,.35)':intensity<.75?'rgba(129,140,248,.6)':'rgba(129,140,248,.85)';
-      h+='<div class="hm-cell" style="background:'+bg+'" title="'+days[d]+' '+hr2+':00 = '+v+'">'+(v>0?v:'')+'</div>';
+  var div = document.getElementById('hmDiv');
+  var h = '<div></div>';
+  for(var hr=0; hr<24; hr++) h += '<div class="hm-hdr">' + (hr<10?'0':'') + hr + '</div>';
+  for(var d=0; d<7; d++){
+    h += '<div class="hm-lbl">' + dayN[d] + '</div>';
+    for(var hr2=0; hr2<24; hr2++){
+      var v = hm[d] ? hm[d][hr2]||0 : 0;
+      var t = maxV > 0 ? v/maxV : 0;
+      var bg;
+      if(t===0) bg='rgba(99,110,230,.04)';
+      else if(t<.2) bg='rgba(99,110,230,.15)';
+      else if(t<.4) bg='rgba(99,110,230,.3)';
+      else if(t<.6) bg='rgba(99,110,230,.48)';
+      else if(t<.8) bg='rgba(99,110,230,.65)';
+      else bg='rgba(99,110,230,.88)';
+      h += '<div class="hm-cell" style="background:'+bg+'" title="'+dayN[d]+' '+hr2+':00 \u2014 '+v+' sessions">'+(v>0?v:'')+'</div>';
     }
   }
-  div.innerHTML=h;
+  div.innerHTML = h;
 
-  // Scores table
-  var scores=pr.session_scores||[];
-  var sh='<table><thead><tr><th>Date</th><th>Project</th><th>Dur(m)</th><th>Tools</th><th>Lines</th><th>Tokens</th><th>Score</th></tr></thead><tbody>';
+  /* Scores */
+  var scores = pr.session_scores || [];
+  var sh = '<table><thead><tr><th>Date</th><th>Project</th><th>Dur</th><th>Tools</th><th>Lines</th><th>Tokens</th><th>Score</th></tr></thead><tbody>';
   scores.slice(0,20).forEach(function(s){
-    var proj=(s.project||'').replace(/-home-jhkwak-?/g,'').replace(/-/g,'/')||'-';
-    sh+='<tr><td class="mono">'+s.date+'</td><td>'+proj+'</td><td class="mono">'+s.duration_min+'</td><td class="mono">'+s.tool_count+'</td><td class="mono">'+s.lines_changed+'</td><td class="mono">'+fmt(s.tokens_used)+'</td><td class="mono">'+s.score+'</td></tr>';
+    var proj = (s.project||'').replace(/-home-jhkwak-?/g,'').replace(/-/g,'/') || '\u2014';
+    sh += '<tr><td class="mono">' + s.date + '</td><td>' + proj + '</td><td class="mono">' + s.duration_min + 'm</td><td class="mono">' + s.tool_count + '</td><td class="mono">' + s.lines_changed + '</td><td class="mono">' + fmt(s.tokens_used) + '</td><td class="mono">' + s.score + '</td></tr>';
   });
-  sh+='</tbody></table>';
-  document.getElementById('scoresWrap').innerHTML=sh;
+  sh += '</tbody></table>';
+  document.getElementById('scoresTbl').innerHTML = sh;
 
-  // Active days chart
-  var ad=pr.active_days||[];
-  if(ad.length>0){
-    new Chart(document.getElementById('cActiveDays'),{
-      type:'bar',
-      data:{labels:ad.map(function(d){return d.day}),datasets:[{data:ad.map(function(d){return d.count}),backgroundColor:'#818cf8',borderRadius:4}]},
-      options:{plugins:{legend:{display:false}},scales:{y:{ticks:{stepSize:1}}}}
+  /* Active days */
+  var ad = pr.active_days || [];
+  if(ad.length > 0){
+    new Chart(document.getElementById('cDays'), {
+      type: 'bar',
+      data: {
+        labels: ad.map(function(d){return d.day.slice(0,3)}),
+        datasets: [{ data: ad.map(function(d){return d.count}), backgroundColor: ad.map(function(_,i){return PAL[i%PAL.length]}), borderRadius: 8, barThickness: 32 }]
+      },
+      options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { stepSize: 1 } } } }
     });
   }
-  document.getElementById('actSummary').innerHTML='<div class="metric"><div class="mv" style="color:#818cf8;font-size:1.1rem">'+pr.avg_session_duration_min+'m</div><div class="ml">Avg Session</div></div><div class="metric"><div class="mv" style="color:#f59e0b;font-size:1.1rem">'+fmt(pr.total_lines_changed)+'</div><div class="ml">Lines Changed</div></div>';
+  document.getElementById('actMet').innerHTML =
+    '<div class="met"><div class="met-v" style="color:var(--glow2)">' + pr.avg_session_duration_min + 'm</div><div class="met-l">Avg Session</div></div>'
+    + '<div class="met"><div class="met-v" style="color:var(--amber)">' + fmt(pr.total_lines_changed) + '</div><div class="met-l">Lines Changed</div></div>';
 })();
 
-// Trends tab
+/* ══════════ TRENDS ══════════ */
 (function(){
-  var tr=D.trends||{};
-  var w=tr.weekly||[];
+  var tr = D.trends || {};
+  var w = tr.weekly || [];
 
-  // Weekly dual axis
-  new Chart(document.getElementById('cWeekly'),{
-    type:'line',
-    data:{labels:w.map(function(d){return d.week}),datasets:[
-      {label:'Sessions',data:w.map(function(d){return d.sessions}),borderColor:'#818cf8',backgroundColor:'rgba(129,140,248,.1)',fill:true,tension:.3,yAxisID:'y'},
-      {label:'Cost',data:w.map(function(d){return d.cost}),borderColor:'#10b981',tension:.3,yAxisID:'y1'}
-    ]},
-    options:{interaction:{mode:'index',intersect:false},scales:{y:{position:'left',title:{display:true,text:'Sessions'}},y1:{position:'right',grid:{drawOnChartArea:false},title:{display:true,text:'Cost'},ticks:{callback:function(v){return '$'+v.toFixed(0)}}},x:{ticks:{maxTicksLimit:15}}},plugins:{legend:{labels:{usePointStyle:true}}}}
+  /* Weekly dual-axis */
+  new Chart(document.getElementById('cWeekly'), {
+    type: 'line',
+    data: {
+      labels: w.map(function(d){return d.week}),
+      datasets: [
+        {
+          label: 'Sessions', data: w.map(function(d){return d.sessions}),
+          borderColor: '#636ee6', backgroundColor: 'rgba(99,110,230,.1)',
+          fill: true, tension: .4, pointRadius: 4, pointBackgroundColor: '#636ee6',
+          borderWidth: 2.5, yAxisID: 'y'
+        },
+        {
+          label: 'Cost', data: w.map(function(d){return d.cost}),
+          borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,.08)',
+          fill: true, tension: .4, pointRadius: 4, pointBackgroundColor: '#34d399',
+          borderWidth: 2.5, yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        y: { position: 'left', title: { display: true, text: 'Sessions', color: '#636ee6' }, ticks: { color: '#636ee6' } },
+        y1: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Cost', color: '#34d399' }, ticks: { color: '#34d399', callback: function(v){return '$'+v.toFixed(0)} } }
+      }
+    }
   });
 
-  // Skill trends
-  var st=tr.skill_trends_weekly||{};
-  var stKeys=Object.keys(st);
-  if(stKeys.length>0){
-    var weeks=st[stKeys[0]].map(function(d){return d.week});
-    var ds=stKeys.slice(0,8).map(function(k,i){
-      return {label:k,data:st[k].map(function(d){return d.count}),borderColor:COLORS[i%COLORS.length],tension:.3,fill:false};
+  /* Skill trends */
+  var st = tr.skill_trends_weekly || {};
+  var stKeys = Object.keys(st);
+  if(stKeys.length > 0){
+    var weeks = st[stKeys[0]].map(function(d){return d.week});
+    var ds = stKeys.slice(0,8).map(function(k,i){
+      return {
+        label: k, data: st[k].map(function(d){return d.count}),
+        borderColor: PAL[i % PAL.length], tension: .4, fill: false,
+        borderWidth: 2, pointRadius: 3, pointBackgroundColor: PAL[i % PAL.length]
+      };
     });
-    new Chart(document.getElementById('cSkillTrend'),{
-      type:'line',data:{labels:weeks,datasets:ds},
-      options:{plugins:{legend:{labels:{font:{size:11},usePointStyle:true}}},scales:{y:{ticks:{stepSize:1}}}}
+    new Chart(document.getElementById('cSkTrend'), {
+      type: 'line', data: { labels: weeks, datasets: ds },
+      options: { plugins: { legend: { labels: { font: { size: 11 } } } }, scales: { y: { ticks: { stepSize: 1 } } } }
     });
   }
 
-  // Monthly table
-  var mo=tr.monthly||[];
-  var mh='<table><thead><tr><th>Month</th><th>Sessions</th><th>Tools</th><th>Skills</th><th>Tokens</th><th>Cost</th><th>Lines</th></tr></thead><tbody>';
+  /* Monthly table */
+  var mo = tr.monthly || [];
+  var mh = '<table><thead><tr><th>Month</th><th>Sessions</th><th>Tools</th><th>Skills</th><th>Tokens</th><th>Cost</th><th>Lines</th></tr></thead><tbody>';
   mo.forEach(function(m){
-    mh+='<tr><td class="mono">'+m.month+'</td><td class="mono">'+m.sessions+'</td><td class="mono">'+m.tool_calls+'</td><td class="mono">'+m.skill_calls+'</td><td class="mono">'+fmt(m.tokens)+'</td><td class="mono">'+usd(m.cost)+'</td><td class="mono">'+fmt(m.lines_changed)+'</td></tr>';
+    mh += '<tr><td class="mono">' + m.month + '</td><td class="mono">' + m.sessions + '</td><td class="mono">' + m.tool_calls + '</td><td class="mono">' + m.skill_calls + '</td><td class="mono">' + fmt(m.tokens) + '</td><td class="mono">' + usd(m.cost) + '</td><td class="mono">' + fmt(m.lines_changed) + '</td></tr>';
   });
-  mh+='</tbody></table>';
-  document.getElementById('monthlyWrap').innerHTML=mh;
+  mh += '</tbody></table>';
+  document.getElementById('moTbl').innerHTML = mh;
 })();
 </script>
 </body>
