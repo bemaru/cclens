@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 
+from cclens.analyzers.skills import _normalize_skill
 from cclens.analyzers.tokens import compute_cost, get_pricing
 from cclens.parsers.jsonl import SessionData
 
@@ -129,7 +130,7 @@ def analyze_trends(sessions: list[SessionData]) -> dict:
                     total_tool_counter[tool_name] += 1
 
                 if tool_name == "Skill":
-                    skill_name = tu.get("skill", tu.get("skill_original", ""))
+                    skill_name = _normalize_skill(tu.get("skill", ""))
                     if skill_name:
                         skill_week_counter[skill_name][week] += 1
                         total_skill_counter[skill_name] += 1

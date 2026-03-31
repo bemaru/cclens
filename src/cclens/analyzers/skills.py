@@ -7,6 +7,29 @@ from pathlib import Path
 
 from cclens.parsers.jsonl import SessionData
 
+SKILL_RENAME_MAP: dict[str, str] = {
+    "log-session": "cc-save-session",
+    "lunch": "es-suggest-lunch",
+    "reviewing-best-practices": "dev-review-standards",
+    "bemaru-skills:analyze-github-repo": "maru-plugins:analyze-github-repo",
+    "save-session": "cc-save-session",
+    "review-session": "cc-review-session",
+    "lint-claude-md": "cc-optimize-claude-md",
+    "check-skill-usage": "cc-analyze-skill-usage",
+    "check-lunch": "es-suggest-lunch",
+    "note-daily": "obsidian-note-daily",
+    "note-weekly": "obsidian-note-weekly",
+    "note-monthly": "obsidian-note-monthly",
+    "summarize-youtube": "obsidian-summarize-youtube",
+    "vault-audit": "obsidian-audit-vault",
+    "summarize-iteration": "es-summarize-iteration",
+    "gitlab-issue": "es-manage-gitlab-issue",
+    "review-standards": "dev-review-standards",
+    "es-check-lunch": "es-suggest-lunch",
+    "cc-check-skill-usage": "cc-analyze-skill-usage",
+    "obsidian-vault-audit": "obsidian-audit-vault",
+}
+
 CATEGORIES: dict[str, dict[str, str]] = {
     "craft": {"label": "Dev Quality", "color": "#6366f1"},
     "es": {"label": "Work", "color": "#f59e0b"},
@@ -32,6 +55,14 @@ SKILL_RELATIONS: list[tuple[str, str, str]] = [
 _DEFAULT_CATEGORY = {"label": "Other", "color": "#64748b"}
 
 SKILLS_DIR = Path.home() / ".claude" / "skills"
+
+
+def _normalize_skill(name: str) -> str:
+    """Normalize a raw skill name: apply rename map, strip namespace prefix."""
+    mapped = SKILL_RENAME_MAP.get(name, name)
+    if ":" in mapped:
+        mapped = mapped.split(":", 1)[1]
+    return mapped
 
 
 def _categorize(skill_name: str) -> str:
@@ -75,16 +106,14 @@ def analyze_skills(sessions: list[SessionData]) -> dict:
             if tool_name:
                 tool_counter[tool_name] += 1
 
-            # Count skill invocations
+            # Count skill invocations (normalize raw names here)
             if tool_name == "Skill":
-                skill = tu.get("skill", "")
-                if skill:
-                    skill_counter[skill] += 1
-
-                # Track renames
-                original = tu.get("skill_original", "")
-                if original and original != skill:
-                    renamed_seen.add((original, skill))
+                raw_skill = tu.get("skill", "")
+                if raw_skill:
+                    normalized = _normalize_skill(raw_skill)
+                    skill_counter[normalized] += 1
+                    if raw_skill != normalized:
+                        renamed_seen.add((raw_skill, normalized))
 
     # --- categories ---
     registered = _get_registered_skills()

@@ -24,11 +24,6 @@ def _build_data(sessions, days, project_filter):
 
     total_tokens = tokens["total_input_tokens"] + tokens["total_output_tokens"]
 
-    # Top active hours display
-    active_hours_display = ", ".join(
-        f"{h['hour']}시({h['count']})" for h in productivity["active_hours"][:3]
-    ) if productivity["active_hours"] else "-"
-
     return {
         "overview": {
             "sessions": len(sessions),
@@ -36,7 +31,6 @@ def _build_data(sessions, days, project_filter):
             "total_tokens": total_tokens,
             "total_lines_changed": productivity["total_lines_changed"],
             "cache_hit_rate": round(tokens["cache_hit_rate"] * 100, 1),
-            "active_hours_display": active_hours_display,
         },
         "skills": skills,
         "tokens": tokens,

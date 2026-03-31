@@ -393,7 +393,7 @@ document.getElementById('tabBar').addEventListener('click', function(e){
     { v: fmt(o.total_tokens),           l: 'Total Tokens',   c: '--violet' },
     { v: fmt(o.total_lines_changed),    l: 'Lines Changed',  c: '--amber' },
     { v: (o.cache_hit_rate||0) + '%',   l: 'Cache Hit Rate', c: '--rose' },
-    { v: o.active_hours_display || '-', l: 'Active Hours',   c: '--cyan' }
+    { v: (D.productivity.active_hours||[]).slice(0,3).map(function(h){return h.hour+':00('+h.count+')'}).join(', ')||'-', l: 'Active Hours',   c: '--cyan' }
   ];
   var h = '';
   kpis.forEach(function(k){

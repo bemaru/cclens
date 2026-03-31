@@ -7,29 +7,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-SKILL_RENAME_MAP: dict[str, str] = {
-    "log-session": "cc-save-session",
-    "lunch": "es-suggest-lunch",
-    "reviewing-best-practices": "dev-review-standards",
-    "bemaru-skills:analyze-github-repo": "maru-plugins:analyze-github-repo",
-    "save-session": "cc-save-session",
-    "review-session": "cc-review-session",
-    "lint-claude-md": "cc-optimize-claude-md",
-    "check-skill-usage": "cc-analyze-skill-usage",
-    "check-lunch": "es-suggest-lunch",
-    "note-daily": "obsidian-note-daily",
-    "note-weekly": "obsidian-note-weekly",
-    "note-monthly": "obsidian-note-monthly",
-    "summarize-youtube": "obsidian-summarize-youtube",
-    "vault-audit": "obsidian-audit-vault",
-    "summarize-iteration": "es-summarize-iteration",
-    "gitlab-issue": "es-manage-gitlab-issue",
-    "review-standards": "dev-review-standards",
-    "es-check-lunch": "es-suggest-lunch",
-    "cc-check-skill-usage": "cc-analyze-skill-usage",
-    "obsidian-vault-audit": "obsidian-audit-vault",
-}
-
 CLAUDE_PROJECTS_DIR = Path.home() / ".claude" / "projects"
 
 
@@ -57,13 +34,6 @@ def _parse_timestamp(ts: str | None) -> datetime | None:
         return None
 
 
-def _normalize_skill(name: str) -> str:
-    """Normalize a skill name using the rename map and strip namespace prefix."""
-    mapped = SKILL_RENAME_MAP.get(name, name)
-    # Strip "namespace:name" → "name" (e.g. "commit-commands:commit" → "commit")
-    if ":" in mapped:
-        mapped = mapped.split(":", 1)[1]
-    return mapped
 
 
 def _estimate_lines(text: str | None) -> int:
@@ -104,8 +74,7 @@ def _extract_tool_uses(record: dict) -> list[dict]:
         if tool_name == "Skill":
             skill_raw = tool_input.get("skill", "")
             if skill_raw:
-                entry["skill_original"] = skill_raw
-                entry["skill"] = _normalize_skill(skill_raw)
+                entry["skill"] = skill_raw
 
         if tool_input:
             entry["input"] = tool_input
