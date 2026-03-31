@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import calendar
-from datetime import datetime
+from datetime import datetime, timezone
 
 from cclens.parsers.jsonl import SessionData
 
@@ -21,7 +21,13 @@ def _session_tokens(session: SessionData) -> int:
 def _session_duration_min(session: SessionData) -> float:
     """Duration in minutes, or 0 if start/end times are missing."""
     if session.start_time and session.end_time:
-        return (session.end_time - session.start_time).total_seconds() / 60
+        start = session.start_time
+        end = session.end_time
+        if start.tzinfo is None:
+            start = start.replace(tzinfo=timezone.utc)
+        if end.tzinfo is None:
+            end = end.replace(tzinfo=timezone.utc)
+        return (end - start).total_seconds() / 60
     return 0.0
 
 

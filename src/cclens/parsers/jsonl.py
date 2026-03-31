@@ -149,7 +149,15 @@ def _compute_lines_changed(tool_uses: list[dict]) -> int:
             total += _estimate_lines(content)
         elif tool == "Edit":
             new_string = inp.get("new_string", "")
-            total += _estimate_lines(new_string)
+            old_string = inp.get("old_string", "")
+            total += abs(_estimate_lines(new_string) - _estimate_lines(old_string))
+        elif tool == "MultiEdit":
+            edits = inp.get("edits", [])
+            for edit in edits:
+                if isinstance(edit, dict):
+                    new_s = edit.get("new_string", "")
+                    old_s = edit.get("old_string", "")
+                    total += abs(_estimate_lines(new_s) - _estimate_lines(old_s))
 
     return total
 
@@ -252,7 +260,6 @@ def load_sessions(
         return []
 
     cutoff = datetime.now(tz=timezone.utc) - timedelta(days=days)
-    cutoff_naive = cutoff.replace(tzinfo=None)
     sessions: list[SessionData] = []
 
     for jsonl_file in CLAUDE_PROJECTS_DIR.rglob("*.jsonl"):
@@ -267,9 +274,9 @@ def load_sessions(
             if project_filter not in project_name:
                 continue
 
-        # Filter by modification time
-        mtime = datetime.fromtimestamp(jsonl_file.stat().st_mtime)
-        if mtime < cutoff_naive:
+        # Filter by modification time (UTC-aware)
+        mtime = datetime.fromtimestamp(jsonl_file.stat().st_mtime, tz=timezone.utc)
+        if mtime < cutoff:
             continue
 
         try:
@@ -278,12 +285,13 @@ def load_sessions(
         except (OSError, UnicodeDecodeError):
             continue
 
-    _epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
-    sessions.sort(
-        key=lambda s: (
-            s.start_time.replace(tzinfo=timezone.utc)
-            if s.start_time and s.start_time.tzinfo is None
-            else s.start_time or _epoch
-        )
-    )
+    def _sort_key(s):
+        t = s.start_time
+        if t is None:
+            return datetime(1970, 1, 1, tzinfo=timezone.utc)
+        if t.tzinfo is None:
+            return t.replace(tzinfo=timezone.utc)
+        return t
+
+    sessions.sort(key=_sort_key)
     return sessions

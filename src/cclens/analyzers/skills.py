@@ -48,9 +48,10 @@ def _categorize(skill_name: str) -> str:
 
 def _get_registered_skills() -> list[str]:
     """List registered skill names from ~/.claude/skills/ subdirectories."""
-    if not SKILLS_DIR.is_dir():
+    try:
+        return sorted(d.name for d in SKILLS_DIR.iterdir() if d.is_dir())
+    except OSError:
         return []
-    return sorted(d.name for d in SKILLS_DIR.iterdir() if d.is_dir())
 
 
 def analyze_skills(sessions: list[SessionData]) -> dict:

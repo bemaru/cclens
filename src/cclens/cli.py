@@ -133,7 +133,8 @@ def _print_text_report(sessions, data):
 @click.option("--output", default=None, help="Output path for HTML dashboard")
 def main(html, open_browser, days, project, output):
     """cclens - Claude Code session analytics."""
-    sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
 
     sessions = load_sessions(days=days, project_filter=project)
     if not sessions:

@@ -8,7 +8,7 @@ def generate_dashboard(data: dict, output_path: str | None = None) -> str:
         output_path = str(Path.home() / ".claude" / "cclens-dashboard.html")
 
     template_dir = Path(__file__).parent / "templates"
-    env = Environment(loader=FileSystemLoader(str(template_dir)), autoescape=False)
+    env = Environment(loader=FileSystemLoader(str(template_dir)), autoescape=True)
     template = env.get_template("dashboard.html")
 
     html = template.render(data=data)

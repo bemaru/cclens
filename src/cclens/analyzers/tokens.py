@@ -30,7 +30,7 @@ MODEL_PRICING: dict[str, dict[str, float]] = {
 _DEFAULT_PRICING_KEY = "claude-sonnet-4"
 
 
-def _get_pricing(model: str) -> dict[str, float]:
+def get_pricing(model: str) -> dict[str, float]:
     """Look up pricing for a model string.
 
     Matches by checking if the model string starts with a known pricing key.
@@ -42,7 +42,7 @@ def _get_pricing(model: str) -> dict[str, float]:
     return MODEL_PRICING[_DEFAULT_PRICING_KEY]
 
 
-def _compute_cost(
+def compute_cost(
     input_tokens: int,
     output_tokens: int,
     cache_creation_tokens: int,
@@ -104,8 +104,8 @@ def analyze_tokens(sessions: list[SessionData]) -> dict:
             cache_read = usage.get("cache_read_input_tokens", 0)
             timestamp = usage.get("timestamp", "")
 
-            pricing = _get_pricing(model)
-            cost = _compute_cost(inp, out, cache_create, cache_read, pricing)
+            pricing = get_pricing(model)
+            cost = compute_cost(inp, out, cache_create, cache_read, pricing)
 
             total_input += inp
             total_output += out
@@ -134,11 +134,12 @@ def analyze_tokens(sessions: list[SessionData]) -> dict:
         [
             {
                 "date": date,
-                "cost": vals["cost"],
+                "cost": round(vals["cost"], 4),
                 "input_tokens": vals["input_tokens"],
                 "output_tokens": vals["output_tokens"],
             }
             for date, vals in daily_agg.items()
+            if date != "unknown"
         ],
         key=lambda x: x["date"],
     )

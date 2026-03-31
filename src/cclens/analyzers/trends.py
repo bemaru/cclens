@@ -4,22 +4,8 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 
+from cclens.analyzers.tokens import compute_cost, get_pricing
 from cclens.parsers.jsonl import SessionData
-
-
-def estimate_cost(
-    input_tokens: int,
-    output_tokens: int,
-    cache_read: int = 0,
-    cache_creation: int = 0,
-) -> float:
-    """Estimate USD cost from token counts (sonnet-heavy blended rate)."""
-    return (
-        input_tokens * 3.0
-        + output_tokens * 15.0
-        + cache_read * 0.3
-        + cache_creation * 3.75
-    ) / 1_000_000
 
 
 def _session_week(session: SessionData) -> str | None:
@@ -37,18 +23,26 @@ def _session_month(session: SessionData) -> str | None:
     return session.start_time.strftime("%Y-%m")
 
 
-def _session_tokens(session: SessionData) -> tuple[int, int, int, int]:
-    """Sum (input, output, cache_read, cache_creation) tokens for a session."""
+def _session_tokens_and_cost(session: SessionData) -> tuple[int, int, int, int, float]:
+    """Sum (input, output, cache_read, cache_creation, cost) for a session."""
     input_t = 0
     output_t = 0
     cache_read = 0
     cache_creation = 0
+    total_cost = 0.0
     for usage in session.token_usage:
-        input_t += usage.get("input_tokens", 0)
-        output_t += usage.get("output_tokens", 0)
-        cache_read += usage.get("cache_read_input_tokens", 0)
-        cache_creation += usage.get("cache_creation_input_tokens", 0)
-    return input_t, output_t, cache_read, cache_creation
+        inp = usage.get("input_tokens", 0)
+        out = usage.get("output_tokens", 0)
+        cr = usage.get("cache_read_input_tokens", 0)
+        cc = usage.get("cache_creation_input_tokens", 0)
+        input_t += inp
+        output_t += out
+        cache_read += cr
+        cache_creation += cc
+        model = usage.get("model", "")
+        pricing = get_pricing(model)
+        total_cost += compute_cost(inp, out, cc, cr, pricing)
+    return input_t, output_t, cache_read, cache_creation, total_cost
 
 
 def _count_skill_calls(session: SessionData) -> int:
@@ -81,6 +75,7 @@ def analyze_trends(sessions: list[SessionData]) -> dict:
             "output_tokens": 0,
             "cache_read": 0,
             "cache_creation": 0,
+            "cost": 0.0,
             "lines_changed": 0,
         }
     )
@@ -93,6 +88,7 @@ def analyze_trends(sessions: list[SessionData]) -> dict:
             "output_tokens": 0,
             "cache_read": 0,
             "cache_creation": 0,
+            "cost": 0.0,
             "lines_changed": 0,
         }
     )
@@ -106,7 +102,7 @@ def analyze_trends(sessions: list[SessionData]) -> dict:
     for session in sessions:
         week = _session_week(session)
         month = _session_month(session)
-        input_t, output_t, cache_r, cache_c = _session_tokens(session)
+        input_t, output_t, cache_r, cache_c, session_cost = _session_tokens_and_cost(session)
         skill_calls = _count_skill_calls(session)
         tool_calls = _count_tool_calls(session)
 
@@ -121,6 +117,7 @@ def analyze_trends(sessions: list[SessionData]) -> dict:
             agg["output_tokens"] += output_t
             agg["cache_read"] += cache_r
             agg["cache_creation"] += cache_c
+            agg["cost"] += session_cost
             agg["lines_changed"] += session.lines_changed
 
         # Per-tool and per-skill tracking (week-level)
@@ -142,12 +139,6 @@ def analyze_trends(sessions: list[SessionData]) -> dict:
     for week in sorted(week_data):
         agg = week_data[week]
         tokens = agg["input_tokens"] + agg["output_tokens"]
-        cost = estimate_cost(
-            agg["input_tokens"],
-            agg["output_tokens"],
-            agg["cache_read"],
-            agg["cache_creation"],
-        )
         weekly.append(
             {
                 "week": week,
@@ -155,7 +146,7 @@ def analyze_trends(sessions: list[SessionData]) -> dict:
                 "skill_calls": agg["skill_calls"],
                 "tool_calls": agg["tool_calls"],
                 "tokens": tokens,
-                "cost": round(cost, 4),
+                "cost": round(agg["cost"], 4),
                 "lines_changed": agg["lines_changed"],
             }
         )
@@ -165,12 +156,6 @@ def analyze_trends(sessions: list[SessionData]) -> dict:
     for month in sorted(month_data):
         agg = month_data[month]
         tokens = agg["input_tokens"] + agg["output_tokens"]
-        cost = estimate_cost(
-            agg["input_tokens"],
-            agg["output_tokens"],
-            agg["cache_read"],
-            agg["cache_creation"],
-        )
         monthly.append(
             {
                 "month": month,
@@ -178,7 +163,7 @@ def analyze_trends(sessions: list[SessionData]) -> dict:
                 "skill_calls": agg["skill_calls"],
                 "tool_calls": agg["tool_calls"],
                 "tokens": tokens,
-                "cost": round(cost, 4),
+                "cost": round(agg["cost"], 4),
                 "lines_changed": agg["lines_changed"],
             }
         )

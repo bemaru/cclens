@@ -340,7 +340,7 @@ tr:hover td { background: var(--surface); }
 </div>
 
 <script>
-var D = {{ data | tojson }};
+var D = {{ data | tojson | safe }};
 var PAL = ['#636ee6','#34d399','#fbbf24','#fb7185','#22d3ee','#a78bfa','#fb923c','#818cf8','#4ade80','#f472b6'];
 
 /* ── Chart.js globals ── */
@@ -465,7 +465,7 @@ document.getElementById('tabBar').addEventListener('click', function(e){
     },
     options: {
       indexAxis: 'y', plugins: { legend: { display: false } },
-      scales: { x: { type: used.length>1 && used[0].count > 10*used[used.length-1].count ? 'logarithmic' : 'linear' }, y: { ticks: { font: { family: "'JetBrains Mono', monospace", size: 11 } } } }
+      scales: { x: { type: used.length>2 && used[0].count > 10*used[Math.floor(used.length/2)].count ? 'logarithmic' : 'linear' }, y: { ticks: { font: { family: "'JetBrains Mono', monospace", size: 11 } } } }
     }
   });
 
