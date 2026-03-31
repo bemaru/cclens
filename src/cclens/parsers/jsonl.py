@@ -58,8 +58,12 @@ def _parse_timestamp(ts: str | None) -> datetime | None:
 
 
 def _normalize_skill(name: str) -> str:
-    """Normalize a skill name using the rename map."""
-    return SKILL_RENAME_MAP.get(name, name)
+    """Normalize a skill name using the rename map and strip namespace prefix."""
+    mapped = SKILL_RENAME_MAP.get(name, name)
+    # Strip "namespace:name" → "name" (e.g. "commit-commands:commit" → "commit")
+    if ":" in mapped:
+        mapped = mapped.split(":", 1)[1]
+    return mapped
 
 
 def _estimate_lines(text: str | None) -> int:
@@ -281,7 +285,8 @@ def load_sessions(
 
         try:
             session = parse_session(jsonl_file)
-            sessions.append(session)
+            if session.tool_uses or session.token_usage:
+                sessions.append(session)
         except (OSError, UnicodeDecodeError):
             continue
 

@@ -98,6 +98,8 @@ def analyze_tokens(sessions: list[SessionData]) -> dict:
     for session in sessions:
         for usage in session.token_usage:
             model = usage.get("model", "unknown")
+            if model.startswith("<") or model == "unknown":
+                continue
             inp = usage.get("input_tokens", 0)
             out = usage.get("output_tokens", 0)
             cache_create = usage.get("cache_creation_input_tokens", 0)

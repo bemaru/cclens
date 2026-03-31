@@ -10,10 +10,27 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [{ name = "jhkwak" }]
+keywords = ["claude", "anthropic", "claude-code", "analytics", "dashboard"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Topic :: Utilities",
+]
 dependencies = [
     "click>=8.0",
     "jinja2>=3.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/bemaru/cclens"
+Source = "https://github.com/bemaru/cclens"
+"Bug Tracker" = "https://github.com/bemaru/cclens/issues"
 
 [project.scripts]
 cclens = "cclens.cli:main"

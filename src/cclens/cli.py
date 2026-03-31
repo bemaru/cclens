@@ -128,7 +128,7 @@ def _print_text_report(sessions, data):
 @click.command()
 @click.option("--html", is_flag=True, help="Generate HTML dashboard")
 @click.option("--open", "open_browser", is_flag=True, help="Open dashboard in browser")
-@click.option("--days", default=30, help="Number of days to analyze")
+@click.option("--days", default=30, type=click.IntRange(min=1), help="Number of days to analyze")
 @click.option("--project", default=None, help="Filter by project name")
 @click.option("--output", default=None, help="Output path for HTML dashboard")
 def main(html, open_browser, days, project, output):
