@@ -117,7 +117,7 @@ body::before {
 /* ── Layout ── */
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
 .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 18px; }
-@media (max-width: 900px) { .row, .row-3 { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .row, .row-3 { grid-template-columns: 1fr; } .hm-grid { overflow-x: auto; } }
 .span-full { grid-column: 1 / -1; }
 
 /* ── Cards ── */
@@ -143,7 +143,7 @@ body::before {
 
 /* ── Charts ── */
 .ch { position: relative; min-height: 280px; }
-.donut-box { max-width: 320px; margin: 0 auto; }
+.donut-box { max-width: 320px; margin: 0 auto; min-height: 280px; }
 
 /* ── Tables ── */
 .tbl-wrap { max-height: 440px; overflow-y: auto; }
@@ -361,6 +361,8 @@ Chart.defaults.plugins.tooltip.bodyFont = { family: "'JetBrains Mono', monospace
 
 function fmt(n){if(n==null)return '0';if(n>=1e6)return (n/1e6).toFixed(1)+'M';if(n>=1e3)return (n/1e3).toFixed(1)+'K';return typeof n==='number'&&n%1!==0?n.toFixed(1):String(n)}
 function usd(n){return '$'+(typeof n==='number'?n.toFixed(2):'0')}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function costTick(v){return v<1?'$'+v.toFixed(2):'$'+v.toFixed(0)}
 
 /* ── Tabs ── */
 document.getElementById('tabBar').addEventListener('click', function(e){
@@ -370,14 +372,15 @@ document.getElementById('tabBar').addEventListener('click', function(e){
   btn.classList.add('on');
   var panel = document.getElementById('p-' + btn.dataset.tab);
   panel.classList.add('on');
-  /* Resize all charts in the newly visible panel so they render at correct size */
-  setTimeout(function(){
-    var canvases = panel.querySelectorAll('canvas');
-    canvases.forEach(function(c){
-      var inst = Chart.getChart(c);
-      if(inst) inst.resize();
+  /* Resize charts after layout reflow completes (double-rAF ensures two paint frames) */
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      panel.querySelectorAll('canvas').forEach(function(c){
+        var inst = Chart.getChart(c);
+        if(inst) inst.resize();
+      });
     });
-  }, 20);
+  });
 });
 
 /* ══════════ OVERVIEW ══════════ */
@@ -435,7 +438,7 @@ document.getElementById('tabBar').addEventListener('click', function(e){
     },
     options: {
       plugins: { legend: { display: false } },
-      scales: { x: { ticks: { maxTicksLimit: 10 } }, y: { ticks: { callback: function(v){return '$'+v.toFixed(0)} } } }
+      scales: { x: { ticks: { maxTicksLimit: 10 } }, y: { ticks: { callback: costTick } } }
     }
   });
 })();
@@ -455,7 +458,7 @@ document.getElementById('tabBar').addEventListener('click', function(e){
     options: { maintainAspectRatio: true, aspectRatio: 1, cutout: '62%', plugins: { legend: { position: 'bottom' } } }
   });
 
-  var used = sk.skill_list.filter(function(s){return s.count>0});
+  var used = (sk.skill_list || []).filter(function(s){return s.count>0});
   var catColors = {}; catKeys.forEach(function(k){ catColors[k] = cats[k].color; });
   new Chart(document.getElementById('cSkillBar'), {
     type: 'bar',
@@ -473,10 +476,10 @@ document.getElementById('tabBar').addEventListener('click', function(e){
   var rd = document.getElementById('relDiv');
   (sk.relations || []).forEach(function(r){
     var el = document.createElement('div'); el.className = 'rel-row';
-    el.innerHTML = '<span class="rel-node' + (r.src_count>0?' active':'') + '">' + r.src + '</span>'
+    el.innerHTML = '<span class="rel-node' + (r.src_count>0?' active':'') + '">' + esc(r.src) + '</span>'
       + '<span class="rel-arrow">\u2192</span>'
-      + '<span class="rel-node' + (r.dst_count>0?' active':'') + '">' + r.dst + '</span>'
-      + '<span class="rel-lbl">' + r.label + '</span>';
+      + '<span class="rel-node' + (r.dst_count>0?' active':'') + '">' + esc(r.dst) + '</span>'
+      + '<span class="rel-lbl">' + esc(r.label) + '</span>';
     rd.appendChild(el);
   });
 
@@ -493,7 +496,7 @@ document.getElementById('tabBar').addEventListener('click', function(e){
     var el = document.createElement('div');
     el.className = 'sk-item ' + (s.used ? 'used' : 'unused');
     var color = catColors[s.category] || '#636ee6';
-    el.innerHTML = '<span><span class="cat-dot" style="background:'+color+'"></span><span class="sk-name">'+s.name+'</span></span><span class="sk-cnt">'+s.count+'</span>';
+    el.innerHTML = '<span><span class="cat-dot" style="background:'+color+'"></span><span class="sk-name">'+esc(s.name)+'</span></span><span class="sk-cnt">'+s.count+'</span>';
     g.appendChild(el);
   });
 })();
@@ -513,7 +516,7 @@ document.getElementById('tabBar').addEventListener('click', function(e){
         fill: true, tension: .4, pointRadius: 2, borderWidth: 2.5
       }]
     },
-    options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 12 } }, y: { ticks: { callback: function(v){return '$'+v.toFixed(0)} } } } }
+    options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 12 } }, y: { ticks: { callback: costTick } } } }
   });
 
   var dist = tk.token_type_distribution || {};
@@ -579,7 +582,7 @@ document.getElementById('tabBar').addEventListener('click', function(e){
   var sh = '<table><thead><tr><th>Date</th><th>Project</th><th>Dur</th><th>Tools</th><th>Lines</th><th>Tokens</th><th>Score</th></tr></thead><tbody>';
   scores.slice(0,20).forEach(function(s){
     var proj = (s.project||'').replace(/-home-jhkwak-?/g,'').replace(/-/g,'/') || '\u2014';
-    sh += '<tr><td class="mono">' + s.date + '</td><td>' + proj + '</td><td class="mono">' + s.duration_min + 'm</td><td class="mono">' + s.tool_count + '</td><td class="mono">' + s.lines_changed + '</td><td class="mono">' + fmt(s.tokens_used) + '</td><td class="mono">' + s.score + '</td></tr>';
+    sh += '<tr><td class="mono">' + esc(s.date) + '</td><td>' + esc(proj) + '</td><td class="mono">' + s.duration_min + 'm</td><td class="mono">' + s.tool_count + '</td><td class="mono">' + s.lines_changed + '</td><td class="mono">' + fmt(s.tokens_used) + '</td><td class="mono">' + s.score + '</td></tr>';
   });
   sh += '</tbody></table>';
   document.getElementById('scoresTbl').innerHTML = sh;
@@ -595,6 +598,8 @@ document.getElementById('tabBar').addEventListener('click', function(e){
       },
       options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { stepSize: 1 } } } }
     });
+  } else {
+    document.getElementById('cDays').parentNode.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 0;font-size:.82rem">No activity data</p>';
   }
   document.getElementById('actMet').innerHTML =
     '<div class="met"><div class="met-v" style="color:var(--glow2)">' + pr.avg_session_duration_min + 'm</div><div class="met-l">Avg Session</div></div>'
@@ -630,7 +635,7 @@ document.getElementById('tabBar').addEventListener('click', function(e){
       interaction: { mode: 'index', intersect: false },
       scales: {
         y: { position: 'left', title: { display: true, text: 'Sessions', color: '#636ee6' }, ticks: { color: '#636ee6' } },
-        y1: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Cost', color: '#34d399' }, ticks: { color: '#34d399', callback: function(v){return '$'+v.toFixed(0)} } }
+        y1: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Cost', color: '#34d399' }, ticks: { color: '#34d399', callback: costTick } }
       }
     }
   });
