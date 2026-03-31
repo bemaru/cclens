@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>cclens Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -31,25 +31,18 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,110,230,.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(52,211,153,.06) 0%, transparent 50%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-family: 'DM Sans', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,110,230,.12) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(52,211,153,.06) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.shell { position: relative; z-index: 1; max-width: 1440px; margin: 0 auto; padding: 28px 32px; }
+.shell { max-width: 1440px; margin: 0 auto; padding: 28px 32px; }
 
 /* ── Header ── */
 .hdr {
@@ -87,9 +80,8 @@ body::before {
   box-shadow: 0 2px 12px rgba(99,110,230,.35);
 }
 
-.panel { display: none; animation: fadeUp .35s ease; }
+.panel { display: none; }
 .panel.on { display: block; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ── Stat Cards ── */
 .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 28px; }
@@ -339,12 +331,13 @@ tr:hover td { background: var(--surface); }
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
 var D = {{ data | tojson | safe }};
 var PAL = ['#636ee6','#34d399','#fbbf24','#fb7185','#22d3ee','#a78bfa','#fb923c','#818cf8','#4ade80','#f472b6'];
 
 /* ── Chart.js globals ── */
-Chart.defaults.devicePixelRatio = 2;
+Chart.defaults.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
 Chart.defaults.font.family = "'DM Sans', sans-serif";
 Chart.defaults.color = '#6b7394';
 Chart.defaults.borderColor = 'rgba(30,39,68,.7)';
@@ -364,15 +357,23 @@ function usd(n){return '$'+(typeof n==='number'?n.toFixed(2):'0')}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function costTick(v){return v<1?'$'+v.toFixed(2):'$'+v.toFixed(0)}
 
-/* ── Tabs ── */
+/* ── Tabs + lazy chart init ── */
+var _tabInited = { overview: true };
+var _tabInit = {};
 document.getElementById('tabBar').addEventListener('click', function(e){
   var btn = e.target.closest('.nav-btn'); if(!btn) return;
   document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('on'); });
   document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
   btn.classList.add('on');
-  var panel = document.getElementById('p-' + btn.dataset.tab);
+  var tab = btn.dataset.tab;
+  var panel = document.getElementById('p-' + tab);
   panel.classList.add('on');
-  /* Resize charts after layout reflow completes (double-rAF ensures two paint frames) */
+  /* Lazy init: build charts/DOM only on first tab visit */
+  if(!_tabInited[tab] && _tabInit[tab]){
+    _tabInited[tab] = true;
+    _tabInit[tab]();
+  }
+  /* Resize charts after layout reflow */
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
       panel.querySelectorAll('canvas').forEach(function(c){
@@ -444,7 +445,7 @@ document.getElementById('tabBar').addEventListener('click', function(e){
 })();
 
 /* ══════════ SKILLS ══════════ */
-(function(){
+_tabInit.skills = function(){
   var sk = D.skills || {};
   var cats = sk.categories || {};
   var catKeys = Object.keys(cats);
@@ -499,10 +500,10 @@ document.getElementById('tabBar').addEventListener('click', function(e){
     el.innerHTML = '<span><span class="cat-dot" style="background:'+color+'"></span><span class="sk-name">'+esc(s.name)+'</span></span><span class="sk-cnt">'+s.count+'</span>';
     g.appendChild(el);
   });
-})();
+};
 
 /* ══════════ TOKENS ══════════ */
-(function(){
+_tabInit.tokens = function(){
   var tk = D.tokens || {};
   var dc = tk.daily_costs || [];
 
@@ -547,10 +548,10 @@ document.getElementById('tabBar').addEventListener('click', function(e){
     + '<div class="met"><div class="met-v" style="color:var(--glow2)">' + fmt(tk.total_cache_read_tokens) + '</div><div class="met-l">Cache Read</div></div>'
     + '<div class="met"><div class="met-v" style="color:var(--violet)">' + fmt(tk.total_cache_creation_tokens) + '</div><div class="met-l">Cache Write</div></div>'
     + '</div>';
-})();
+};
 
 /* ══════════ PRODUCTIVITY ══════════ */
-(function(){
+_tabInit.productivity = function(){
   var pr = D.productivity || {};
   var hm = pr.hourly_heatmap || [];
   var dayN = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -604,10 +605,10 @@ document.getElementById('tabBar').addEventListener('click', function(e){
   document.getElementById('actMet').innerHTML =
     '<div class="met"><div class="met-v" style="color:var(--glow2)">' + pr.avg_session_duration_min + 'm</div><div class="met-l">Avg Session</div></div>'
     + '<div class="met"><div class="met-v" style="color:var(--amber)">' + fmt(pr.total_lines_changed) + '</div><div class="met-l">Lines Changed</div></div>';
-})();
+};
 
 /* ══════════ TRENDS ══════════ */
-(function(){
+_tabInit.trends = function(){
   var tr = D.trends || {};
   var w = tr.weekly || [];
 
@@ -666,7 +667,7 @@ document.getElementById('tabBar').addEventListener('click', function(e){
   });
   mh += '</tbody></table>';
   document.getElementById('moTbl').innerHTML = mh;
-})();
+};
 </script>
 </body>
 </html>
